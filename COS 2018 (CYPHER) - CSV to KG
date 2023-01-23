@@ -1,6 +1,6 @@
-// Document COS
+// Document
 
-LOAD CSV WITH HEADERS FROM "file:///COS2018-WKT.csv" AS ROW
+LOAD CSV WITH HEADERS FROM "file:///COS2018-WKT-ARRAYWGS.csv" AS ROW
 
 // ------------------- ENTITIES
 
@@ -9,26 +9,26 @@ MERGE (E74:E74_Group {a:"DGT"})
 MERGE (E65:E65_Creation {a:"RSI Analysis"})
 MERGE (E41COS2018:E41_Appellation {a:"Carta de Uso e Ocupação do Solo para 2018"})
 MERGE (E52COS2018:E52_Time_Span {a:"2018"})
-MERGE (E28COS2018:E28_Conceptual_Object {a:"COS"})
-MERGE (E55Concepts2018:E55_Type {a:"Soil Use Type"})
-MERGE (E55Taxonomy:E55_Type {a:"Nomenclature"})
+MERGE (E28COS2018:E28_Conceptual_Object {a:"COS 2018"})
+MERGE (E55Concepts2018:E55_Type {a:"Soil Use Type of COS 2018"})
+MERGE (E17Taxonomy2018:E17_Type_Assigment {a:"The soil use type assigning of COS 2018"})
 
 // CONCEPTS
-MERGE (E55T1:E55_Type {a:ROW.COS18n1_L})
-MERGE (E55T2:E55_Type {a:ROW.COS18n2_L})
-MERGE (E55T3:E55_Type {a:ROW.COS18n3_L})
-MERGE (E55T4:E55_Type {a:ROW.COS18n4_L})
-MERGE (E42T1:E42_Identifier {a:ROW.COS18n1_C})
-MERGE (E42T2:E42_Identifier {a:ROW.COS18n2_C})
-MERGE (E42T3:E42_Identifier {a:ROW.COS18n3_C})
-MERGE (E42T4:E42_Identifier {a:ROW.COS18n4_C})
+MERGE (E552018T1:E55_Type {a:ROW.COS18n1_L, b:"COS2018", c: 1})
+MERGE (E552018T2:E55_Type {a:ROW.COS18n2_L, b:"COS2018", c: 2})
+MERGE (E552018T3:E55_Type {a:ROW.COS18n3_L, b:"COS2018", c: 3})
+MERGE (E552018T4:E55_Type {a:ROW.COS18n4_L, b:"COS2018", c: 4})
+MERGE (E422018T1:E42_Identifier {a:ROW.COS18n1_C, b:"COS2018", c: 1})
+MERGE (E422018T2:E42_Identifier {a:ROW.COS18n2_C, b:"COS2018", c: 2})
+MERGE (E422018T3:E42_Identifier {a:ROW.COS18n3_C, b:"COS2018", c: 3})
+MERGE (E422018T4:E42_Identifier {a:ROW.COS18n4_C, b:"COS2018", c: 4})
 
 // GEOMETRY
 
-CREATE (E70Thing:E70_Thing {a:"Polygons"})
+//CREATE (E70Thing:E70_Thing {a:"Polygons"})
 CREATE (E42PolygonID:E42_Identifier {a:ROW.ID})
 
-CREATE (SP6PlacePolygon:SP6_Declarative_Place {a:"The place defined by the polygon"})
+CREATE (SP6PlacePolygon:SP6_Declarative_Place {a:"The place defined by the polygon"+E42PolygonID.a})
 CREATE (E94WNT:E94_Space_Primitive {WKT:ROW.WKT})
 MERGE (SP4DatumWKT:SP4_Spatial_Coordinate_Reference_System {a:"WKT"})
 MERGE (SP15Polygon:SP15_Geometry {a:"Polygon"})
@@ -51,31 +51,31 @@ MERGE (E28COS2018)-[:P1_is_identified_by]->(E41COS2018)
 MERGE (E28COS2018)<-[:P1_identifies]-(E41COS2018)
 MERGE (E41COS2018)-[:P137_exemplifies]->(E55Concepts2018)
 MERGE (E41COS2018)<-[:P137_is_exemplified_by]-(E55Concepts2018)
-MERGE (E55Concepts2018)-[:P137_1_in_the_taxonomic_role]->(E55Taxonomy)
+MERGE (E55Concepts2018)-[:P42_was_assigned_by]->(E17Taxonomy2018)
 
 // -- CONCEPTS
-MERGE (E55Taxonomy)-[:P127_has_broader_term]->(E55T1)
-MERGE (E55T1)<-[:P127_has_broader_term]-(E55T2)
-MERGE (E55T1)-[:P127_has_narrower_term]->(E55T2)
-MERGE (E55T2)<-[:P127_has_broader_term]-(E55T3)
-MERGE (E55T2)-[:P127_has_narrower_term]->(E55T3)
-MERGE (E55T3)<-[:P127_has_broader_term]-(E55T4)
-MERGE (E55T3)-[:P127_has_narrower_term]->(E55T4)
-MERGE (E55T1)-[:P48_has_preferred_identifier]->(E42T1)
-MERGE (E55T1)<-[:P48_is_preferred_identifier_of]-(E42T1)
-MERGE (E55T2)-[:P48_has_preferred_identifier]->(E42T2)
-MERGE (E55T2)<-[:P48_is_preferred_identifier_of]-(E42T2)
-MERGE (E55T3)-[:P48_has_preferred_identifier]->(E42T3)
-MERGE (E55T3)<-[:P48_is_preferred_identifier_of]-(E42T3)
-MERGE (E55T4)-[:P48_has_preferred_identifier]->(E42T4)
-MERGE (E55T4)<-[:P48_is_preferred_identifier_of]-(E42T4)
+MERGE (E17Taxonomy2018)-[:P2_has_type]->(E552018T1)
+MERGE (E552018T1)<-[:P127_has_broader_term]-(E552018T2)
+MERGE (E552018T1)-[:P127_has_narrower_term]->(E552018T2)
+MERGE (E552018T2)<-[:P127_has_broader_term]-(E552018T3)
+MERGE (E552018T2)-[:P127_has_narrower_term]->(E552018T3)
+MERGE (E552018T3)<-[:P127_has_broader_term]-(E552018T4)
+MERGE (E552018T3)-[:P127_has_narrower_term]->(E552018T4)
+
+
+MERGE (E552018T1)-[:P48_has_preferred_identifier]->(E422018T1)
+MERGE (E552018T1)<-[:P48_is_preferred_identifier_of]-(E422018T1)
+MERGE (E552018T2)-[:P48_has_preferred_identifier]->(E422018T2)
+MERGE (E552018T2)<-[:P48_is_preferred_identifier_of]-(E422018T2)
+MERGE (E552018T3)-[:P48_has_preferred_identifier]->(E422018T3)
+MERGE (E552018T3)<-[:P48_is_preferred_identifier_of]-(E422018T3)
+MERGE (E552018T4)-[:P48_has_preferred_identifier]->(E422018T4)
+MERGE (E552018T4)<-[:P48_is_preferred_identifier_of]-(E422018T4)
 
 // -- GEOMETRY
 
-CREATE (E70Thing)-[:P130_shows_features_of]->(E55T4)
-CREATE (E70Thing)<-[:P130_features_are_also_found_on]-(E55T4)
-CREATE (E70Thing)-[:P130_features_are_also_found_on]->(E42PolygonID)
-CREATE (E70Thing)<-[:P130_shows_features_of]-(E42PolygonID)
+CREATE (E55T4)-[:P130_features_are_also_found_on]->(SP6PlacePolygon)
+CREATE (E55T4)<-[:P130_shows_features_of]-(SP6PlacePolygon)
 
 // WKT 
 CREATE (E42PolygonID)-[:P48_is_preferred_identifier_of]->(SP6PlacePolygon)
@@ -83,8 +83,8 @@ CREATE (E42PolygonID)<-[:P48_has_preferred_identifier]-(SP6PlacePolygon)
 CREATE (SP6PlacePolygon)-[:P168_place_is_defined_by]->(E94WNT)
 CREATE (SP6PlacePolygon)<-[:P168_defines_place]-(E94WNT)
 CREATE (E94WNT)-[:Q9_is_expressed_in_terms_of]->(SP4DatumWKT)
-CREATE (E94WNT)-[:P168_place_is_defined_by]->(SP15Polygon)
-CREATE (E94WNT)<-[:P168_defines_place]-(SP15Polygon)
+CREATE (E94WNT)-[:geo_hasGeometry]->(SP15Polygon)
+CREATE (E94WNT)<-[:geo_hasGeometry]-(SP15Polygon)
 
 CREATE (E94WNT)-[:GLP1_space_primitive_is_defined_by]->(GeometricPerimeter)
 CREATE (E94WNT)<-[:GLP1_defines_space_primitive]-(GeometricPerimeter)
@@ -104,8 +104,8 @@ CALL {WITH ROW
 MERGE (E42PolygonID:E42_Identifier {a:ROW.ID})
 
 // VERTICES ENTITIES
-MERGE (SP6PlaceVertices:SP6_Declarative_Place {a:"The place defined by the vertices of polygon "+E42PolygonID.a})
-CREATE (E94LatLon:E94_Space_Primitive {lat: ROW.y, lon:ROW.x})
+CREATE (SP6PlaceVertices:SP6_Declarative_Place {a:"The place defined by the vertices of polygon "+E42PolygonID.a})
+CREATE (E94LatLon:E94_Space_Primitive {latitude: ROW.ycoord, longitude:ROW.xcoord})
 MERGE (SP4DatumWGS84:SP4_Spatial_Coordinate_Reference_System {a:"WGS 84"})
 MERGE (SP15Point:SP15_Geometry {a:"Point"})
 
@@ -124,8 +124,8 @@ CREATE (SP6PlaceVertices)-[:P168_place_is_defined_by]->(E94LatLon)
 CREATE (SP6PlaceVertices)<-[:P168_defines_place]-(E94LatLon)
 MERGE (E94LatLon)-[:Q9_is_expressed_in_terms_of]->(SP4DatumWGS84)
 
-CREATE (E94LatLon)-[:P168_place_is_defined_by]->(SP15Point)
-CREATE (E94LatLon)<-[:P168_defines_place]-(SP15Point)
+CREATE (E94LatLon)-[:geo_hasGeometry]->(SP15Point)
+CREATE (E94LatLon)<-[:geo_hasGeometry]-(SP15Point)
 
 CREATE (E94LatLon)-[:GLP1_space_primitive_is_defined_by]->(VertexIndex)
 CREATE (E94LatLon)<-[:GLP1_defines_space_primitive]-(VertexIndex)
@@ -138,8 +138,11 @@ CREATE (E94LatLon)<-[:GLP1_defines_space_primitive]-(VertexPartIndex)
 CREATE (E94LatLon)-[:GLP1_space_primitive_is_defined_by]->(Distance)
 CREATE (E94LatLon)<-[:GLP1_defines_space_primitive]-(Distance)
 CREATE (E94LatLon)-[:GLP1_space_primitive_is_defined_by]->(Angle)
-CREATE (E94LatLon)<-[:GLP1_space_primitive_is_defined_by]-(Angle)
+CREATE (E94LatLon)<-[:GLP1_defines_space_primitive]-(Angle)
 
 } IN TRANSACTIONS OF 1000 ROWS
+
+//CREATE ()-[:]->()
+//CREATE ()<-[:]-()
 
 RETURN *
