@@ -1,6 +1,8 @@
 // ------------------------------------------------- DOLMEN
 
-LOAD CSV WITH HEADERS FROM "file:///DolmenP2022.csv" AS ROW
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenP2022.csv" AS ROW
+
+CALL {WITH ROW
 
 //  ENTITIE DOLMEN
 MERGE (E55Type:E55_Type {a:ROW.Type})
@@ -33,6 +35,41 @@ CREATE (E22)-[:P46_is_composed_of]->(E22Corridor)
 CREATE (E22)<-[:P46_forms_part_of]-(E22Corridor)
 CREATE (E22)-[:P46_is_composed_of]->(E22BurialMound)
 CREATE (E22)<-[:P46_forms_part_of]-(E22BurialMound)
+
+
+// ------------------------------------------------- DOLMEN PLACE
+
+
+//  ENTITIES - WHOLE DOLMEN DESCRIPTIONS (PLACE)
+
+CREATE (SP6PointDolmen:SP6_Declarative_Place {a:"The place of the dolmen: "+E22.a})
+CREATE (E94Coordinates:E94_Space_Primitive {lat: ROW.Latitude, lon:ROW.Longitude}) 
+CREATE (SP4Datum:SP4_Spatial_Coordinate_Reference_System {a:ROW.Datum})
+CREATE (E53Township:E53_Place {a:ROW.Township})
+CREATE (E53Municipality:E53_Place {a:ROW.Municipality})
+
+CREATE (E55Township:E55_Type {a:"Township"})
+CREATE (E55Municipality:E55_Type {a:"Municipality"})
+
+// RELATIONSHIP - WHOLE DOLMEN DESCRIPTIONS (PLACE)
+
+CREATE (E22)-[:P55_has_current_location]->(SP6PointDolmen)
+CREATE (E22)<-[:P55_currently_holds]-(SP6PointDolmen)
+CREATE (SP6PointDolmen)-[:P168_place_is_defined_by]->(E94Coordinates)
+CREATE (SP6PointDolmen)<-[:P168_defines_place]-(E94Coordinates)
+MERGE (E94Coordinates)-[:Q9_is_expressed_in_terms_of]->(SP4Datum)
+MERGE (SP6PointDolmen)-[:P89_falls_within]->(E53Township)
+MERGE (SP6PointDolmen)<-[:P55_contains]-(E53Township)
+MERGE (E53Township)-[:P89_falls_within]->(E53Municipality)
+MERGE (E53Township)<-[:P55_contains]-(E53Municipality)
+
+
+MERGE (E53Township)-[:P2_has_type]->(E55Township)
+MERGE (E53Municipality)-[:P2_has_type]->(E55Municipality)
+
+// ------------------------------------------------------------------
+
+
 
 // ENTITIES DOLMEN - PART-WHOLE COMPOSITION
 
@@ -239,8 +276,8 @@ CREATE (E19CapstoneChamber)<-[:P195_was_a_presence_of]-(E93CapstonePresence)
 
 //  ENTITIES - DOLMEN DATA SOURCE (DATA SOURCE)
 
-CREATE (E13:E13_Attribute_Assignment {a:"Information contained in the document"})
 MERGE (E31:E31_Document {a:ROW.DataSource}) 
+CREATE (E13:E13_Attribute_Assignment {a:"Information contained in the document"+E31.a})
 CREATE (E52AD:E52_Time_Span {a:ROW.AcquiredData})
 CREATE (E52DSD:E52_Time_Span {a:ROW.DataSourceDate})
 MERGE (E55AD:E55_Type {a:"AcquiredData"}) 
@@ -265,50 +302,9 @@ CREATE (E52AD)-[:P2_has_type]->(E55AD)
 CREATE (E52DSD)<-[:P2_is_type_of]-(E55DSD)
 CREATE (E52DSD)-[:P2_has_type]->(E55DSD)
 
-
-RETURN *
-
-
-
-// ------------------------------------------------- DOLMEN PLACE
-
-LOAD CSV WITH HEADERS FROM "file:///DolmenP2022.csv" AS ROW
-
-//  ENTITIES - WHOLE DOLMEN DESCRIPTIONS (PLACE)
-
-MATCH (E22:E22_Human_Made_Object {a:ROW.Designation})
-CREATE (SP6PointDolmen:SP6_Declarative_Place {a:"The place defined by the point"})
-CREATE (E94Coordinates:E94_Space_Primitive {lat: ROW.Latitude, lon:ROW.Longitude}) 
-//CREATE (E94Coordinates:E94_Space_Primitive {lat: ROW.Latitude, lon:ROW.Longitude}) - opcao 2
-CREATE (SP4Datum:SP4_Spatial_Coordinate_Reference_System {a:ROW.Datum})
-CREATE (E53Township:E53Place {a:ROW.Township})
-CREATE (E53Municipality:E53Place {a:ROW.Municipality})
-
-
-// RELATIONSHIP - WHOLE DOLMEN DESCRIPTIONS (PLACE)
-
-CREATE (E22)-[:P55_has_current_location]->(SP6PointDolmen)
-CREATE (E22)<-[:P55_currently_holds]-(SP6PointDolmen)
-CREATE (SP6PointDolmen)-[:P168_place_is_defined_by]->(E94Coordinates)
-CREATE (SP6PointDolmen)<-[:P168_defines_place]-(E94Coordinates)
-MERGE (E94Coordinates)-[:Q9_is_expressed_in_terms_of]->(SP4Datum)
-MERGE (SP6PointDolmen)-[:P89_falls_within]->(E53Township)
-MERGE (SP6PointDolmen)<-[:P55_contains]-(E53Township)
-MERGE (E53Township)-[:P89_falls_within]->(E53Municipality)
-MERGE (E53Township)<-[:P55_contains]-(E53Municipality)
-
-
-RETURN *
-
-
-// -------------------------------------------------- DOLMEN PRODUCTION
-
-LOAD CSV WITH HEADERS FROM "file:///DolmenP2022.csv" AS ROW
-
 //  ENTITIES - WHOLE DOLMEN DESCRIPTIONS (PRODUCTION)
 
-MATCH (E22:E22_Human_Made_Object {a:ROW.Designation})
-CREATE (E12Production:E12_Production {a:"Construction of the Dolmen"})
+CREATE (E12Production:E12_Production {a:"Construction of the Dolmen"+E22.a})
 CREATE (E52ConstructionTime:E52_TimeSpan {a:ROW.Period})
 
 // RELATIONSHIP - WHOLE DOLMEN DESCRIPTIONS (PRODUCTION)
@@ -317,5 +313,10 @@ CREATE (E12Production)-[:P108_has_produced]->(E22)
 CREATE (E12Production)<-[:P108_was_produced_by]-(E22)
 CREATE (E12Production)-[:P4_has_time_span]->(E52ConstructionTime)
 CREATE (E12Production)<-[:P4_is_time_span_of]-(E52ConstructionTime)
+
+
+
+} IN TRANSACTIONS OF 100 ROWS
+
 
 RETURN *
