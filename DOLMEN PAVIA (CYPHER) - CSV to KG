@@ -5,21 +5,23 @@
 CALL {WITH ROW
 
 //  ENTITIE DOLMEN
-MERGE (E55Type:E55_Type {a:ROW.Type})
-MERGE (E42GlobalID:E42_Identifier {a:ROW.IDGlobal})
-MERGE (E42LocalID:E42_Identifier {a:ROW.DataSourceID})
-CREATE (E41Designation:E41_Appellation {a:ROW.Designation})
+MERGE (E55Type:E55_Type {E55MonumentType:ROW.Type})
+MERGE (E42GlobalID:E42_Identifier {E42GlobalID:ROW.IDGlobal})
+MERGE (E42LocalID:E42_Identifier {E42LocalID:ROW.DataSourceID})
+CREATE (E41Designation:E41_Appellation {E41DolmenDesignation:ROW.Designation})
 
 // ENTITIES DOLMEN - WHOLE AND PART WHOLE
 
-CREATE (E22:E22_Human_Made_Object {a:ROW.Designation})
-CREATE (E22Chamber:E22_Human_Made_Object {a:"Chamber"})
-CREATE (E22Corridor:E22_Human_Made_Object {a:"Corridor"})
-CREATE (E22BurialMound:E22_Human_Made_Object {a:"Burial_Mound"})
+CREATE (E22:E22_Human_Made_Object {E22DolmenDesignation:ROW.Designation})
+CREATE (E22Chamber:E22_Human_Made_Object {E22DolmenComponents:"Chamber"})
+CREATE (E22Corridor:E22_Human_Made_Object {E22DolmenComponents:"Corridor"})
+CREATE (E22BurialMound:E22_Human_Made_Object {E22DolmenComponents:"Burial_Mound"})
 
 // RELATIONSHIP DOLMEN
 
 CREATE (E22)-[:P2_has_type]->(E55Type)
+CREATE (E22)<-[:P2_is_type_of]-(E55Type)
+
 CREATE (E22)-[:P48_has_preferred_identifier]->(E42GlobalID)
 CREATE (E22)<-[:P48_is_preferred_identifier_of]-(E42GlobalID)
 CREATE (E22)-[:P48_has_preferred_identifier]->(E42LocalID)
@@ -42,14 +44,14 @@ CREATE (E22)<-[:P46_forms_part_of]-(E22BurialMound)
 
 //  ENTITIES - WHOLE DOLMEN DESCRIPTIONS (PLACE)
 
-CREATE (SP6PointDolmen:SP6_Declarative_Place {a:"The place of the dolmen: "+E22.a})
-CREATE (E94Coordinates:E94_Space_Primitive {lat: ROW.Latitude, lon:ROW.Longitude}) 
-CREATE (SP4Datum:SP4_Spatial_Coordinate_Reference_System {a:ROW.Datum})
-CREATE (E53Township:E53_Place {a:ROW.Township})
-CREATE (E53Municipality:E53_Place {a:ROW.Municipality})
+CREATE (SP6PointDolmen:SP6_Declarative_Place {SP6Dolmen:"The place of the dolmen: "+E22.E22DolmenDesignation})
+CREATE (E94Coordinates:E94_Space_Primitive {E94DolmenLatitude: ROW.Latitude, E94DolmenLongitude:ROW.Longitude}) 
+CREATE (SP4Datum:SP4_Spatial_Coordinate_Reference_System {SP4:ROW.Datum}) // O mesmo para todos os arquivos
+CREATE (E53Township:E53_Place {E53Township:ROW.Township}) // O mesmo para todos os arquivos
+CREATE (E53Municipality:E53_Place {E53Municipality:ROW.Municipality}) // O mesmo para todos os arquivos
 
-CREATE (E55Township:E55_Type {a:"Township"})
-CREATE (E55Municipality:E55_Type {a:"Municipality"})
+CREATE (E55Township:E55_Type {E55Township:"Township"}) // O mesmo para todos os arquivos
+CREATE (E55Municipality:E55_Type {E55Municipality:"Municipality"}) // O mesmo para todos os arquivos
 
 // RELATIONSHIP - WHOLE DOLMEN DESCRIPTIONS (PLACE)
 
@@ -62,8 +64,6 @@ MERGE (SP6PointDolmen)-[:P89_falls_within]->(E53Township)
 MERGE (SP6PointDolmen)<-[:P55_contains]-(E53Township)
 MERGE (E53Township)-[:P89_falls_within]->(E53Municipality)
 MERGE (E53Township)<-[:P55_contains]-(E53Municipality)
-
-
 MERGE (E53Township)-[:P2_has_type]->(E55Township)
 MERGE (E53Municipality)-[:P2_has_type]->(E55Municipality)
 
@@ -73,9 +73,9 @@ MERGE (E53Municipality)-[:P2_has_type]->(E55Municipality)
 
 // ENTITIES DOLMEN - PART-WHOLE COMPOSITION
 
-CREATE (E19OrthostatChamber:E19_Physical_Object {a:"Orthostat"})
-CREATE (E19OrthostatCorridor:E19_Physical_Object {a:"Orthostat"})
-CREATE (E19CapstoneChamber:E19_Physical_Object {a:"Capstone"})
+CREATE (E19OrthostatChamber:E19_Physical_Object {E19Components:"Orthostat"})
+CREATE (E19OrthostatCorridor:E19_Physical_Object {E19Components:"Orthostat"})
+CREATE (E19CapstoneChamber:E19_Physical_Object {E19Components:"Capstone"})
 
 // RELATIONSHIP - PART-WHOLE COMPOSITION
 
@@ -91,82 +91,82 @@ CREATE (E22Corridor)<-[:P46_forms_part_of]-(E19OrthostatCorridor)
 
 // MEASUREMENTS TYPES
 
-CREATE (E58DiameterChamber:E58_Measurement_Unit {a:"m"})
-CREATE (E58LengthChamber:E58_Measurement_Unit {a:"m"})
-CREATE (E58EWChamber:E58_Measurement_Unit {a:"m"})
-CREATE (E58NSChamber:E58_Measurement_Unit {a:"m"})
-CREATE (E58HeightMaxChamber:E58_Measurement_Unit {a:"m"})
-CREATE (E58HeightMinChamber:E58_Measurement_Unit {a:"m"})
-CREATE (E58WidthChamber:E58_Measurement_Unit {a:"m"})
-CREATE (E58LengthCorridor:E58_Measurement_Unit {a:"m"})
-CREATE (E58HeightCorridor:E58_Measurement_Unit {a:"m"})
-CREATE (E58WidthMaxCorridor:E58_Measurement_Unit {a:"m"})
-CREATE (E58HeightBurialMound:E58_Measurement_Unit {a:"m"})
-CREATE (E58DiameterBurialMound:E58_Measurement_Unit {a:"m"})
+CREATE (E58DiameterChamber:E58_Measurement_Unit {E58:"m"}) // O mesmo para todos os arquivos
+CREATE (E58LengthChamber:E58_Measurement_Unit {E58:"m"})
+CREATE (E58EWChamber:E58_Measurement_Unit {E58:"m"})
+CREATE (E58NSChamber:E58_Measurement_Unit {E58:"m"})
+CREATE (E58HeightMaxChamber:E58_Measurement_Unit {E58:"m"})
+CREATE (E58HeightMinChamber:E58_Measurement_Unit {E58:"m"})
+CREATE (E58WidthChamber:E58_Measurement_Unit {E58:"m"})
+CREATE (E58LengthCorridor:E58_Measurement_Unit {E58:"m"})
+CREATE (E58HeightCorridor:E58_Measurement_Unit {E58:"m"})
+CREATE (E58WidthMaxCorridor:E58_Measurement_Unit {E58:"m"})
+CREATE (E58HeightBurialMound:E58_Measurement_Unit {E58:"m"})
+CREATE (E58DiameterBurialMound:E58_Measurement_Unit {E58:"m"})
 
 
-MERGE (E55Diameter:E55_Type {a:"Diameter"})
-MERGE (E55Length:E55_Type {a:"Length"})
-MERGE (E55Width:E55_Type {a:"Width"})
-MERGE (E55EW:E55_Type {a:"Eixo E-W"})
-MERGE (E55NS:E55_Type {a:"Eixo N-S"})
-MERGE (E55HeightMax:E55_Type {a:"HeightMax"})
-MERGE (E55HeightMin:E55_Type {a:"HeightMin"})
-MERGE (E55Height:E55_Type {a:"Height"})
-MERGE (E55WidthMax:E55_Type {a:"WidthMax"})
+MERGE (E55Diameter:E55_Type {E55SizeType:"Diameter"}) // O mesmo para todos os arquivos
+MERGE (E55Length:E55_Type {E55SizeType:"Length"})
+MERGE (E55Width:E55_Type {E55SizeType:"Width"})
+MERGE (E55EW:E55_Type {E55SizeType:"Eixo E-W"})
+MERGE (E55NS:E55_Type {E55SizeType:"Eixo N-S"})
+MERGE (E55HeightMax:E55_Type {E55SizeType:"HeightMax"})
+MERGE (E55HeightMin:E55_Type {E55SizeType:"HeightMin"})
+MERGE (E55Height:E55_Type {E55SizeType:"Height"})
+MERGE (E55WidthMax:E55_Type {E55SizeType:"WidthMax"})
 
 
 // CHAMBER
-MERGE (E55ChamberShape:E55_Type {a:ROW.Shape})
-MERGE (E57Chamber:E57_Material {a:ROW.ChamberMaterial})
-MERGE (E3Chamber:E3_Condition_State {a:ROW.ChamberState})
-CREATE (E16Chamber:E16_Measurement {a:ROW.ChamberMeasureMethod})
-CREATE (E54Diameter:E54_Dimension {a:ROW.Diameter})
-CREATE (E54Length:E54_Dimension {a:ROW.Length})
-CREATE (E54Width:E54_Dimension {a:ROW.width})
-CREATE (E54eixoEW:E54_Dimension {a:ROW.eixoEW})
-CREATE (E54eixoNS:E54_Dimension {a:ROW.eixoNS})
-CREATE (E54HeightMin:E54_Dimension {a:ROW.HeightMin})
-CREATE (E54HeightMax:E54_Dimension {a:ROW.HeightMax})
-CREATE (E93ChamberPresence:E93_Presence {a:ROW.ChamberPresence})
+MERGE (E55ChamberShape:E55_Type {E55ChamberShape:ROW.Shape})
+MERGE (E57Chamber:E57_Material {E57Material:ROW.ChamberMaterial}) // O mesmo para todos os arquivos
+MERGE (E3Chamber:E3_Condition_State {E3ConditionState:ROW.ChamberState}) // O mesmo para todos os arquivos
+CREATE (E16Chamber:E16_Measurement {E16Measurement:ROW.ChamberMeasureMethod}) // O mesmo para todos os arquivos
+CREATE (E54Diameter:E54_Dimension {E54:ROW.Diameter})
+CREATE (E54Length:E54_Dimension {E54:ROW.Length})
+CREATE (E54Width:E54_Dimension {E54:ROW.width})
+CREATE (E54eixoEW:E54_Dimension {E54:ROW.eixoEW})
+CREATE (E54eixoNS:E54_Dimension {E54:ROW.eixoNS})
+CREATE (E54HeightMin:E54_Dimension {E54:ROW.HeightMin})
+CREATE (E54HeightMax:E54_Dimension {E54:ROW.HeightMax})
+CREATE (E93ChamberPresence:E93_Presence {E93:ROW.ChamberPresence}) // O mesmo para todos os arquivos
 
 // CHAMBER ORTHOSTAT
 
-CREATE (E60ChamberOrthostatInSitu:E60_Number {a:ROW.OrthostatInSitu})
-CREATE (E60ChamberOrthostatExSitu:E60_Number {a:ROW.OrthostatExSitu})
-MERGE (E55ChamberOrthostatInSitu:E55_Type {a:"In Situ"})
-MERGE (E55ChamberOrthostatExSitu:E55_Type {a:"Ex Situ"})
+CREATE (E60ChamberOrthostatInSitu:E60_Number {E60:ROW.OrthostatInSitu})
+CREATE (E60ChamberOrthostatExSitu:E60_Number {E60:ROW.OrthostatExSitu})
+MERGE (E55ChamberOrthostatInSitu:E55_Type {E55OrthostatType:"In Situ"})
+MERGE (E55ChamberOrthostatExSitu:E55_Type {E55OrthostatType:"Ex Situ"})
 
 
 // CORRIDOR
-CREATE (E16Corridor:E16_Measurement {a:ROW.CorridorMeasureMethod})
-CREATE (E54LengthCorridor:E54_Dimension {a:ROW.LengthCorridor})
-CREATE (E54Height:E54_Dimension {a:ROW.Height})
-CREATE (E54WidthMax:E54_Dimension {a:ROW.widthMaxHeight})
+CREATE (E16Corridor:E16_Measurement {E16:ROW.CorridorMeasureMethod})
+CREATE (E54LengthCorridor:E54_Dimension {E54:ROW.LengthCorridor})
+CREATE (E54Height:E54_Dimension {E54:ROW.Height})
+CREATE (E54WidthMax:E54_Dimension {E54:ROW.widthMaxHeight})
 
 // CORRIDOR ORTHOSTAT
 
-CREATE (E60CorridorOrthostats:E60_Number {a:ROW.CorridorOrthostats})
-CREATE (E60CorridorOrthostatsSouth:E60_Number {a:ROW.CorridorOrthostatsSouth})
-CREATE (E60CorridorOrthostatsNorth:E60_Number {a:ROW.CorridorOrthostatsNorth})
-MERGE (E55CorridorOrthostats:E55_Type {a:"Total Orthostats"})
-MERGE (E55CorridorOrthostatsSouth:E55_Type {a:"South side orthostats"})
-MERGE (E55CorridorOrthostatsNorth:E55_Type {a:"North side orthostats"})
-CREATE (E93CorridorPresence:E93_Presence {a:ROW.CorridorPresence})
+CREATE (E60CorridorOrthostats:E60_Number {E60:ROW.CorridorOrthostats})
+CREATE (E60CorridorOrthostatsSouth:E60_Number {E60:ROW.CorridorOrthostatsSouth})
+CREATE (E60CorridorOrthostatsNorth:E60_Number {E60:ROW.CorridorOrthostatsNorth})
+MERGE (E55CorridorOrthostats:E55_Type {E55OrthostatsCorridor:"Total Orthostats"})
+MERGE (E55CorridorOrthostatsSouth:E55_Type {E55OrthostatsCorridor:"South side orthostats"})
+MERGE (E55CorridorOrthostatsNorth:E55_Type {E55OrthostatsCorridor:"North side orthostats"})
+CREATE (E93CorridorPresence:E93_Presence {E93:ROW.CorridorPresence})
 
 
 // BURIAL MOUND
 
-MERGE (E3BurialMound:E3_Condition_State {a:ROW.BurialMoundState})
-CREATE (E16BurialMound:E16_Measurement {a:ROW.BurialMoundMeasureMethod})
-CREATE (E54DiameterBurialMound:E54_Dimension {a:ROW.DiameterBurialMound})
-CREATE (E54HightBurialMound:E54_Dimension {a:ROW.HeightBurialMound})
-CREATE (E93BurialMoundPresence:E93_Presence {a:ROW.BurialMoundPresence})
+MERGE (E3BurialMound:E3_Condition_State {E3:ROW.BurialMoundState})
+CREATE (E16BurialMound:E16_Measurement {E16:ROW.BurialMoundMeasureMethod})
+CREATE (E54DiameterBurialMound:E54_Dimension {E54:ROW.DiameterBurialMound})
+CREATE (E54HightBurialMound:E54_Dimension {E54:ROW.HeightBurialMound})
+CREATE (E93BurialMoundPresence:E93_Presence {E93:ROW.BurialMoundPresence})
 
 
 // CAPSTONE
-MERGE (E3Capstone:E3_Condition_State {a:ROW.CapstoneState})
-CREATE (E93CapstonePresence:E93_Presence {a:ROW.CapstonePresence})
+MERGE (E3Capstone:E3_Condition_State {E3:ROW.CapstoneState})
+CREATE (E93CapstonePresence:E93_Presence {E93:ROW.CapstonePresence})
 
 
 // --- RELATIONSHIP DOLMEN - PART-WHOLE DESCRIPTION / COMPOSITION DESCRIPTION 
@@ -276,12 +276,12 @@ CREATE (E19CapstoneChamber)<-[:P195_was_a_presence_of]-(E93CapstonePresence)
 
 //  ENTITIES - DOLMEN DATA SOURCE (DATA SOURCE)
 
-MERGE (E31:E31_Document {a:ROW.DataSource}) 
-CREATE (E13:E13_Attribute_Assignment {a:"Information contained in the document"+E31.a})
-CREATE (E52AD:E52_Time_Span {a:ROW.AcquiredData})
-CREATE (E52DSD:E52_Time_Span {a:ROW.DataSourceDate})
-MERGE (E55AD:E55_Type {a:"AcquiredData"}) 
-MERGE (E55DSD:E55_Type {a:"DataSourceDate"})
+MERGE (E31:E31_Document {E31:ROW.DataSource}) 
+CREATE (E13:E13_Attribute_Assignment {E13:"Information contained in the document"+E31.E31})
+CREATE (E52AD:E52_Time_Span {E52:ROW.AcquiredData})
+CREATE (E52DSD:E52_Time_Span {E52:ROW.DataSourceDate})
+MERGE (E55AD:E55_Type {E55TimeType:"AcquiredData"}) 
+MERGE (E55DSD:E55_Type {E55TimeType:"DataSourceDate"})
 
 //  RELATIONSHIP - DOLMEN DATA SOURCE (DATA SOURCE)
 
@@ -304,8 +304,8 @@ CREATE (E52DSD)-[:P2_has_type]->(E55DSD)
 
 //  ENTITIES - WHOLE DOLMEN DESCRIPTIONS (PRODUCTION)
 
-CREATE (E12Production:E12_Production {a:"Construction of the Dolmen"+E22.a})
-CREATE (E52ConstructionTime:E52_TimeSpan {a:ROW.Period})
+CREATE (E12Production:E12_Production {a:"Construction of the Dolmen"+E22.E22DolmenDesignation})
+CREATE (E52ConstructionTime:E52_Time_Span {E52:ROW.Period})
 
 // RELATIONSHIP - WHOLE DOLMEN DESCRIPTIONS (PRODUCTION)
 
@@ -317,6 +317,3 @@ CREATE (E12Production)<-[:P4_is_time_span_of]-(E52ConstructionTime)
 
 
 } IN TRANSACTIONS OF 100 ROWS
-
-
-RETURN *
