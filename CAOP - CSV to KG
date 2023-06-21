@@ -1,0 +1,103 @@
+// Document
+
+LOAD CSV WITH HEADERS FROM "file:///CAOP2022-Pavia.csv" AS ROW
+
+// ------------------- ENTITIES
+
+// DEFINITION
+MERGE (E74Group:E74_Group {E74Group:"Direção-Geral do Território (DGT)"})-[:P14_performed]->(E65CreationEvents:E65_Creation {E65CreationEvents:"RSI Analises"})
+MERGE (E74Group)<-[:P14_carried_out_by]-(E65CreationEvents)
+
+MERGE (E41Appelation:E41_Appellation {E41DesignationMaps:"Carta Administrativa Oficial de Portugal"})
+MERGE (E52TimeSpanMaps:E52_Time_Span {E52TimeSpanMaps:"2022"})
+MERGE (E52TimeSpanAcquisition:E52_Time_Span {E52TimeSpanAcquisition:"2023"}) // Nova Adicao da versao 2
+MERGE (E28ConceptualObject:E28_Conceptual_Object {E28ConceptualObject:"CAOP 2022 "})
+MERGE (E55Concepts:E55_Type {E55TypeObject:"Cartografia Digital de Poligono"}) //Mudanca da chave valor versao 2
+
+// CONCEPTS (GENERAL DEFINITION)
+MERGE (E17Taxonomy:E17_Type_Assigment {E17TerminologyDefinition:"Regiões Administrativas"})
+MERGE (E55Terminology:E55_Type {E55Terminology:"Terminologia utilizada para representar a:  "+E28ConceptualObject.E28ConceptualObject}) // Nova Adicao da versao 2
+MERGE (E55TerminologyType1:E55_Type {E55TerminologyType:"País", c: 1})
+MERGE (E55TerminologyType2:E55_Type {E55TerminologyType:"Distrito", c: 2})
+MERGE (E55TerminologyType3:E55_Type {E55TerminologyType:"Concelho", c: 3})
+MERGE (E55TerminologyType4:E55_Type {E55TerminologyType:"Freguesia", c: 4})
+
+// PLACE
+MERGE (E53Pais:E53_Place {E53Place:"Portugal"})
+MERGE (E53Distrito:E53_Place {E53Place:ROW.Distrito})
+MERGE (E53Concelho:E53_Place {E53Place:ROW.Concelho})
+MERGE (E53Freguesia:E53_Place {E53Place:ROW.Freguesia})
+
+// CONCEPTS (INDIVIDUAL DEFINITION) ---  Nova Adicao da versao 2
+CREATE (E18SpecificResource:E18_Phisical_Thing {E18SpecificResource:"Território de:  " +E53Freguesia.E53Place})
+
+// GEOMETRY
+
+MERGE (E42PolygonID:E42_Identifier {E42PolygonID:ROW.DICOFRE})
+CREATE (SP6PlacePolygon:SP6_Declarative_Place {SP6DeclarativePlace:"O lugar definido pelo poligono:  "+E42PolygonID.E42PolygonID})
+CREATE (E94WKT:E94_Space_Primitive {E94PolygonWKT:ROW.WKT})
+MERGE (SP4DatumWKT:SP4_Spatial_Coordinate_Reference_System {SP4Datum:"WKT"})
+MERGE (SP15Polygon:SP15_Geometry {SP15Geometry:"Multipoligono"})
+
+MERGE (C1AreaHATotal:C1_Geometry_extracted_from_maps {GLE3_Area_Ha: ROW.Area_T_ha}) // Total value 
+CREATE (C1AreaHAindividual:C1_Geometry_extracted_from_maps {GLE3_Area_Ha: ROW.Area_EA_ha}) // Individual value
+
+
+// ----------------- RELATIONSHIPS
+
+// -- DEFINITION
+MERGE (E65CreationEvents)-[:P94_has_created]->(E28ConceptualObject)
+MERGE (E65CreationEvents)<-[:P94_was_created_by]-(E28ConceptualObject)
+
+
+MERGE (E28ConceptualObject)-[:P4_has_time_span]->(E52TimeSpanMaps)
+MERGE (E28ConceptualObject)<-[:P4_is_time_span_of]-(E52TimeSpanMaps)
+MERGE (E28ConceptualObject)-[:P4_has_time_span]->(E52TimeSpanAcquisition)
+MERGE (E28ConceptualObject)<-[:P4_is_time_span_of]-(E52TimeSpanAcquisition)
+MERGE (E28ConceptualObject)-[:P1_is_identified_by]->(E41Appelation)
+MERGE (E28ConceptualObject)<-[:P1_identifies]-(E41Appelation)
+MERGE (E28ConceptualObject)-[:P2_has_type]->(E55Concepts)
+MERGE (E28ConceptualObject)<-[:P41_was_classified_by]-(E17Taxonomy)
+MERGE (E28ConceptualObject)-[:P41_classified]->(E17Taxonomy)
+
+// -- CONCEPTS (GENERAL DEFINITION)
+
+MERGE (E17Taxonomy)-[:P2_has_type]->(E55Terminology)
+MERGE (E17Taxonomy)-[:P2A1_assigned_definition_types]->(E55TerminologyType1)
+MERGE (E17Taxonomy)-[:P2A1_assigned_definition_types]->(E55TerminologyType2)
+MERGE (E17Taxonomy)-[:P2A1_assigned_definition_types]->(E55TerminologyType3)
+MERGE (E17Taxonomy)-[:P2A1_assigned_definition_types]->(E55TerminologyType4)
+
+
+// CONCEPTS (INDIVIDUAL DEFINITION)
+CREATE (E18SpecificResource)-[:P137_exemplifies]->(E55TerminologyType4)
+CREATE (E18SpecificResource)<-[:P137_is_exemplified_by]-(E55TerminologyType4)
+
+// -- GEOMETRY
+
+CREATE (E18SpecificResource)-[:P67_is_referred_to_by]->(SP6PlacePolygon)
+CREATE (E18SpecificResource)<-[:P67_refers_to]-(SP6PlacePolygon)
+CREATE (E42PolygonID)-[:P48_is_preferred_identifier_of]->(SP6PlacePolygon)
+CREATE (E42PolygonID)<-[:P48_has_preferred_identifier]-(SP6PlacePolygon)
+CREATE (SP6PlacePolygon)-[:P168_place_is_defined_by]->(E94WKT)
+CREATE (SP6PlacePolygon)<-[:P168_defines_place]-(E94WKT)
+CREATE (E94WKT)-[:Q9_is_expressed_in_terms_of]->(SP4DatumWKT)
+CREATE (E94WKT)-[:geo_hasGeometry]->(SP15Polygon)
+CREATE (E94WKT)-[:GLP1_space_primitive_is_defined_by]->(C1AreaHATotal)
+CREATE (E94WKT)<-[:GLP1_defines_space_primitive]-(C1AreaHATotal)
+CREATE (E94WKT)-[:GLP1_space_primitive_is_defined_by]->(C1AreaHAindividual)
+CREATE (E94WKT)<-[:GLP1_defines_space_primitive]-(C1AreaHAindividual)
+
+// -- PLACE
+MERGE (SP6PlacePolygon)-[:P89_falls_within]->(E53Freguesia)
+MERGE (E53Freguesia)-[:P89_falls_within]->(E53Concelho)
+MERGE (E53Freguesia)<-[:P89_contains]-(E53Concelho)
+MERGE (E53Concelho)-[:P89_falls_within]->(E53Distrito)
+MERGE (E53Concelho)<-[:P89_contains]-(E53Distrito)
+MERGE (E53Distrito)-[:P89_falls_within]->(E53Pais)
+MERGE (E53Distrito)<-[:P89_contains]-(E53Pais)
+
+MERGE (E53Pais)-[:P2_has_type]->(E55TerminologyType1)
+MERGE (E53Distrito)<-[:P2_has_type]-(E55TerminologyType2)
+MERGE (E53Concelho)<-[:P2_has_type]-(E55TerminologyType3)
+MERGE (E53Freguesia)<-[:P2_has_type]-(E55TerminologyType4)
