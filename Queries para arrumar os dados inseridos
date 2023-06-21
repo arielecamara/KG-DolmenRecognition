@@ -1,0 +1,105 @@
+/ --------------------------------------------------- QUEBRAR VIRGULAS 
+
+//-----SEPARANDO VIRGULAS (E41)
+//SEPARANDO VIRGULAS - e41
+MATCH (n:E41_Appellation) WHERE n.E41Designation CONTAINS ';'
+    WITH n, split(n.E41Designation, ';') AS E41_AppellationDivided
+    SET n.E41Designation = E41_AppellationDivided[0]
+    WITH n, E41_AppellationDivided
+    UNWIND E41_AppellationDivided[1..] AS Designation2 //pega todos os valores depois do 1
+    CREATE (n)-[:P139_has_alternative_form]->(x:E41_Appellation {a:Designation2})
+RETURN n, x
+
+//-----SEPARANDO VIRGULAS (E57) 
+MATCH(m:E24_Human_Made_Object)-[r: P45_is_incorporated_in]-(n:E57_Material) WHERE n.a CONTAINS ';'
+WITH m, n, split(n.a, ';') AS E57_MaterialDivided
+//SET n.a = E57_MaterialDivided [0]
+//WITH m, n, E57_MaterialDivided
+DETACH DELETE n
+WITH m,E57_MaterialDivided
+UNWIND E57_MaterialDivided[0..] AS Material2 //pega todos os valores depois do 1
+MERGE (x:E57_Material {a:Material2})
+CREATE (m)<-[:P45_is_incorporated_in]-(x)
+CREATE (x)<-[:P45_consists_of]-(m)
+
+RETURN x, m
+
+// ---------------------------------------------- DELETAR N/A DE CLASSES ESPECIFICAS
+
+// DELETAR RELACOES QUANDO NAO HÁ INFORMACAO DO TIPO DO FORMATO DE CAMERA
+//Delete n/a
+MATCH (n:E55_Type)
+WHERE n.E55ChamberShape = "n/a"
+DETACH DELETE n
+
+// DELETAR RELACOES QUANDO NAO HÁ INFORMACAO DO TIPO DE MATERIAL USADO
+//Delete n/a
+MATCH (n:E57_Material)
+WHERE n.E57Material = "n/a"
+DETACH DELETE n
+
+// DELETAR RELACOES QUANDO NAO HÁ INFORMACAO DO ESTADO DE CONSERVACAO
+//Delete n/a
+MATCH (n:E3_Condition_State)
+WHERE n.E3ConditionState = "n/a"
+DETACH DELETE n
+
+// DELETAR RELACOES QUANDO NAO HÁ INFORMACAO DA PRESENCA
+//Delete n/a
+MATCH (n:E93_Presence)
+WHERE n.E93Presence = "n/a"
+DETACH DELETE n
+
+
+// DELETAR RELACOES QUANDO NAO HÁ INFORMACAO DOS VALORES DA CLASSE E60 para orthostats
+//Delete n/a
+MATCH (n:E60_Number)
+WHERE n.E60Number = "n/a"
+DETACH DELETE n
+
+// DELETAR RELACOES QUANDO NAO HÁ INFORMACAO DOS VALORES DA CLASSE E60 para medidas
+//Delete n/a
+MATCH (n:E60_Number)
+WHERE n.E60DimensionValue = "n/a"
+DETACH DELETE n
+
+
+// ---------------------------------------------- TROCAR DADOS E ADD DADOS
+LOAD CSV WITH HEADERS FROM "file:///TiposDeSolo-NotaExplicativa.csv" AS ROW
+
+MATCH (n:E55_Type)
+WHERE n.E55TerminologyType = ROW.Symbol
+SET n.E55TerminologyType = ROW.Designation
+CREATE (n)-[:P48_has_preferred_identifier]->(a:E42_Identifier {E42AssignedTypeID:ROW.Symbol})
+CREATE (n)<-[:P48_is_preferred_identifier_of]-(a)
+MERGE (n)-[:P127_has_broader_term]->(b:E55_Type {E55TerminologyType:ROW.SoilType})
+MERGE (n)<-[:P127_has_narrower_term]-(b)
+
+	
+
+//  ------------------------------------------------------------QUERIES VALIDAR QUERY
+
+// ---------------------------------------------- RETURNAR POLIGONO ID MAIS PROXIMO DO PONTO DO DOLMEN X
+
+MATCH (n:E22_Human_Made_Object)-[]-(dol:SP6_Declarative_Place) WHERE n.a="Remendo 2"
+    MATCH (dol)-[]-(d:E94_Space_Primitive)
+    MATCH (d)-[]-(coord:SP4_Spatial_Coordinate_Reference_System) WHERE coord.a="WGS84"
+        WITH point ({latitude: toFloat(d.lat), longitude: toFloat(d.lon)}) AS dd, dol
+MATCH (p:E94_Space_Primitive)--()--(pol:E42_Identifier),(pol)--(:)
+    WITH point({latitude: toFloat(p.latitude), longitude:toFloat(p.longitude)}) AS pp,pol,dd, dol
+    WHERE  point.distance(pp, dd)<100
+
+RETURN distinct pol 
+
+// ---------------------------------------------- RETURNAR POLIGONO ID MAIS PROXIMO DO PONTO DO DOLMEN X (...)
+
+MATCH (n:E22_Human_Made_Object)-[]-(dol:SP6_Declarative_Place) WHERE n.a="Remendo 2"
+    MATCH (dol)-[]-(d:E94_Space_Primitive)
+    MATCH (d)-[]-(coord:SP4_Spatial_Coordinate_Reference_System) WHERE coord.a="WGS84"
+        WITH point ({latitude: toFloat(d.lat), longitude: toFloat(d.lon)}) AS dd, dol
+MATCH (p:E94_Space_Primitive)--()--(pol:E42_Identifier)
+    WITH point({latitude: toFloat(p.latitude), longitude:toFloat(p.longitude)}) AS pp,pol,dd, dol
+    WHERE  point.distance(pp, dd)<100
+MATCH (pol)-[:P48_is_preferred_identifier_of]->(:SP6_Declarative_Place)-[:P130_shows_features_of]->(:E55_Type)-[:P127_has_broader_term]->(:E55_Type)-[:P127_has_broader_term]->(:E55_Type)-[:P127_has_broader_term]->(:E55_Type)<-[:P2_has_type]-(ano:E17_Type_Assigment) WHERE ano.a = "The soil use type assigning of COS 2018" 
+
+RETURN distinct pol, ano 
