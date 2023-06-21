@@ -1,0 +1,83 @@
+// Document
+
+LOAD CSV WITH HEADERS FROM "file:///CurvaDeNivel-Pavia.csv" AS ROW
+
+// DEFINITION
+MERGE (E74Group:E74_Group {E74Group:"Camara Municipal de Mora"})-[:P14_performed]->(E65CreationEvents:E65_Creation {E65CreationEvents:"RSI Analises"})
+MERGE (E74Group)<-[:P14_carried_out_by]-(E65CreationEvents)
+
+MERGE (E41Appelation:E41_Appellation {E41DesignationMaps:"Cartografia Vetorial à escala 1:10 000 do concelho de Mora"})
+MERGE (E52TimeSpanMaps:E52_Time_Span {E52TimeSpanMaps:"2019"})
+MERGE (E52TimeSpanAcquisition:E52_Time_Span {E52TimeSpanAcquisition:"2023"}) // Nova Adicao da versao 2
+MERGE (E28ConceptualObject:E28_Conceptual_Object {E28ConceptualObject:"Cartografia Vetorial à escala 1:10 000 do concelho de Mora "})
+MERGE (E55Concepts:E55_Type {E55TypeObject:"Cartografia Digital de Linha"}) //Mudanca da chave valor versao 2
+
+// CONCEPTS (GENERAL DEFINITION)
+MERGE (E17Taxonomy:E17_Type_Assigment {E17TerminologyDefinition:"Hipsometria"})
+MERGE (E55Terminology:E55_Type {E55Terminology:"Terminologia utilizada para representar a:  "+E28ConceptualObject.E28ConceptualObject}) // Nova Adicao da versao 2
+MERGE (E55TerminologyType:E55_Type {E55TerminologyType:ROW.TIPO})
+
+// CONCEPTS (INDIVIDUAL DEFINITION) ---  Nova Adicao da versao 2
+CREATE (E18SpecificResource:E18_Phisical_Thing {E18SpecificResource:"Relevo"})
+CREATE (E54TypeOfDimension:E54_Dimension {E54TypeOfDimension:"Altura"})
+CREATE (E58UnityOfValue:E58_Measurement_Unit {E58UnityOfValue:"metro"})
+CREATE (E60Number:E60_Number {E60Number:ROW.ALTITUDE})
+
+// GEOMETRY
+
+CREATE (E94WKT:E94_Space_Primitive {E94PolygonWKT:ROW.WKT})
+MERGE (SP4DatumWKT:SP4_Spatial_Coordinate_Reference_System {SP4Datum:"WKT"})
+MERGE (SP15Polygon:SP15_Geometry {SP15Geometry:"Multipoligono"})
+CREATE (E42PolygonID:E42_Identifier {E42PolygonID: apoc.create.uuid()})
+CREATE (SP6PlacePolygon:SP6_Declarative_Place {SP6DeclarativePlace:"O lugar definido pelo Poligono:  "+E42PolygonID.E42PolygonID})
+
+// PLACE
+MERGE (E53Pais:E53_Place {E53Place:"Portugal"})
+
+
+// ----------------- RELATIONSHIPS
+
+// -- DEFINITION
+
+MERGE (E65CreationEvents)-[:P94_has_created]->(E28ConceptualObject)
+MERGE (E65CreationEvents)<-[:P94_was_created_by]-(E28ConceptualObject)
+
+MERGE (E28ConceptualObject)-[:P4_has_time_span]->(E52TimeSpanMaps)
+MERGE (E28ConceptualObject)<-[:P4_is_time_span_of]-(E52TimeSpanMaps)
+MERGE (E28ConceptualObject)-[:P4_has_time_span]->(E52TimeSpanAcquisition)
+MERGE (E28ConceptualObject)<-[:P4_is_time_span_of]-(E52TimeSpanAcquisition)
+MERGE (E28ConceptualObject)-[:P1_is_identified_by]->(E41Appelation)
+MERGE (E28ConceptualObject)<-[:P1_identifies]-(E41Appelation)
+MERGE (E28ConceptualObject)-[:P2_has_type]->(E55Concepts)
+
+MERGE (E28ConceptualObject)<-[:P41_was_classified_by]-(E17Taxonomy)
+MERGE (E28ConceptualObject)-[:P41_classified]->(E17Taxonomy)
+
+// -- CONCEPTS (GENERAL DEFINITION)
+
+MERGE (E17Taxonomy)-[:P2_has_type]->(E55Terminology)
+MERGE (E17Taxonomy)-[:P2A1_assigned_definition_types]->(E55TerminologyType)
+
+
+// CONCEPTS (INDIVIDUAL DEFINITION)
+MERGE (E18SpecificResource)-[:P137_exemplifies]->(E55TerminologyType)
+MERGE (E18SpecificResource)<-[:P137_is_exemplified_by]-(E55TerminologyType)
+MERGE (E18SpecificResource)-[:P43_has_dimension]->(E54TypeOfDimension)
+MERGE (E18SpecificResource)<-[:P43_is_dimension_of]-(E54TypeOfDimension)
+MERGE (E54TypeOfDimension)-[:P91_has_unit]->(E58UnityOfValue)
+MERGE (E54TypeOfDimension)<-[:P91_is_unit_of]-(E58UnityOfValue)
+CREATE (E54TypeOfDimension)-[:P90_has_value]->(E60Number)
+
+// -- GEOMETRY
+
+CREATE (E18SpecificResource)-[:P67_is_referred_to_by]->(SP6PlacePolygon)
+CREATE (E18SpecificResource)<-[:P67_refers_to]-(SP6PlacePolygon)
+CREATE (E42PolygonID)-[:P48_is_preferred_identifier_of]->(SP6PlacePolygon)
+CREATE (E42PolygonID)<-[:P48_has_preferred_identifier]-(SP6PlacePolygon)
+CREATE (SP6PlacePolygon)-[:P168_place_is_defined_by]->(E94WKT)
+CREATE (SP6PlacePolygon)<-[:P168_defines_place]-(E94WKT)
+CREATE (E94WKT)-[:Q9_is_expressed_in_terms_of]->(SP4DatumWKT)
+CREATE (E94WKT)-[:geo_hasGeometry]->(SP15Polygon)
+
+// -- PLACE
+MERGE (SP6PlacePolygon)-[:P89_falls_within]->(E53Pais)
