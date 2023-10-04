@@ -1,6 +1,6 @@
-// Document
+//6Query:CartografiaCurvaDeNivel
 
-LOAD CSV WITH HEADERS FROM "file:///CurvaDeNivel-Pavia.csv" AS ROW
+LOAD CSV WITH HEADERS FROM "file:///CountourLine.UTF8.WGS84.csv" AS ROW
 
 // DEFINITION
 MERGE (E74Group:E74_Group {E74Group:"Camara Municipal de Mora"})-[:P14_performed]->(E65CreationEvents:E65_Creation {E65CreationEvents:"RSI Analises"})
@@ -28,11 +28,13 @@ CREATE (E60Number:E60_Number {E60Number:ROW.ALTITUDE})
 CREATE (E94WKT:E94_Space_Primitive {E94PolygonWKT:ROW.WKT})
 MERGE (SP4DatumWKT:SP4_Spatial_Coordinate_Reference_System {SP4Datum:"WKT"})
 MERGE (SP15Polygon:SP15_Geometry {SP15Geometry:"Multipoligono"})
-CREATE (E42PolygonID:E42_Identifier {E42PolygonID: apoc.create.uuid()})
+CREATE (E42PolygonID:E42_Identifier {E42PolygonID: ROW.IDGIS})
 CREATE (SP6PlacePolygon:SP6_Declarative_Place {SP6DeclarativePlace:"O lugar definido pelo Poligono:  "+E42PolygonID.E42PolygonID})
 
 // PLACE
-MERGE (E53Pais:E53_Place {E53Place:"Portugal"})
+//MERGE (E53Pais:E53_Place {E53Place:"Portugal"})
+MERGE (E53Freguesia:E53_Place {E53Place:"Pavia"})
+
 
 
 // ----------------- RELATIONSHIPS
@@ -80,4 +82,4 @@ CREATE (E94WKT)-[:Q9_is_expressed_in_terms_of]->(SP4DatumWKT)
 CREATE (E94WKT)-[:geo_hasGeometry]->(SP15Polygon)
 
 // -- PLACE
-MERGE (SP6PlacePolygon)-[:P89_falls_within]->(E53Pais)
+MERGE (SP6PlacePolygon)-[:P89_falls_within]->(E53Freguesia)
