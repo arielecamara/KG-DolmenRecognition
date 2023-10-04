@@ -1,0 +1,354 @@
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE CA
+
+//7.1 Analysis:CA-DOLMEN PROXIMITY
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-ProximidadeEmMetros.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+SET E94.FID=ROW.FID  
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// -----
+
+//7.1.1 Analysis:CA-DOLMEN PROXIMITY - ADD RELATIONSHIPS OF DISTANCE
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-ProximidadeEmMetros.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E94Domain:E94_Space_Primitive {FID:ROW.FID})
+WITH E94Domain, ROW
+MATCH (E94Range:E94_Space_Primitive{FID:ROW.NEAR_FID})
+
+MERGE (E94Domain)-[r:geo_sfnearby {distance: toFloat(ROW.NEAR_DIST)}]->(E94Range)
+
+} IN TRANSACTIONS OF 50 ROWS
+
+//LEMBRAR DE DELETAR FID DEPOIS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE PA
+
+//7.2 Analysis:PA-DOLMEN PROXIMITY
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-ProximidadeEmMetros.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+SET E94.FID=ROW.FID  
+
+} IN TRANSACTIONS OF 50 ROWS
+
+//---
+
+//7.2.1 Analysis:CA-DOLMEN PROXIMITY - ADD RELATIONSHIPS OF DISTANCE
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-ProximidadeEmMetros.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E94Domain:E94_Space_Primitive {FID:ROW.FID})
+WITH E94Domain, ROW
+MATCH (E94Range:E94_Space_Primitive{FID:ROW.NEAR_FID})
+
+MERGE (E94Domain)-[r:geo_sfnearby {distance: toFloat(ROW.NEAR_DIST)}]->(E94Range)
+
+} IN TRANSACTIONS OF 50 ROWS
+
+//LEMBRAR DE DELETAR FID DEPOIS
+
+// ---
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH WATER LINE - CA
+
+//7.3 Analysis:CA-DOLMEN PROXIMITY WITH WATER LINE
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-ProximidadeEmMetrosDeLinhasDeAgua.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {E55TerminologyType: "Rios"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.codigo}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:geo_sfnearby {DistanceInMeters: toFloat(ROW.NEAR_DIST), NearX: toFloat(ROW.NEAR_X), NearY: toFloat(ROW.NEAR_Y), NearX: toFloat(ROW.NEAR_X), NearAngle: toFloat(ROW.NEAR_ANGLE)}]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH WATER LINE - PA
+
+
+//7.3.1 Analysis:PA-DOLMEN PROXIMITY WITH WATER LINE
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-ProximidadeEmMetrosDeLinhasDeAgua.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {E55TerminologyType: "Rios"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.codigo}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:geo_sfnearby {DistanceInMeters: toFloat(ROW.NEAR_DIST), NearX: toFloat(ROW.NEAR_X), NearY: toFloat(ROW.NEAR_Y), NearX: toFloat(ROW.NEAR_X), NearAngle: toFloat(ROW.NEAR_ANGLE)}]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH RELIEF - CA
+
+//7.4 Analysis:CA-DOLMEN PROXIMITY WITH RELIEF
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-ProximidadeRelevo.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (:E17_Type_Assigment {E17TerminologyDefinition: "Hipsometria"})-[:P2A1_assigned_definition_types]->(E55:E55_Type)-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.IDGIS}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:geo_sfnearby {DistanceInMeters: toFloat(ROW.NEAR_DIST), NearX: toFloat(ROW.NEAR_X), NearY: toFloat(ROW.NEAR_Y), NearX: toFloat(ROW.NEAR_X), NearAngle: toFloat(ROW.NEAR_ANGLE)}]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH RELIEF - PA
+
+
+//7.4.1 Analysis:PA-DOLMEN PROXIMITY WITH RELIEF
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-ProximidadeRelevo.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (:E17_Type_Assigment {E17TerminologyDefinition: "Hipsometria"})-[:P2A1_assigned_definition_types]->(E55:E55_Type)-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.IDGIS_1}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:geo_sfnearby {DistanceInMeters: toFloat(ROW.NEAR_DIST), NearX: toFloat(ROW.NEAR_X), NearY: toFloat(ROW.NEAR_Y), NearX: toFloat(ROW.NEAR_X), NearAngle: toFloat(ROW.NEAR_ANGLE)}]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS1995 - CA
+
+//7.5 Analysis:CA-DOLMEN WITH COS1995
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-SoilUse1995.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS1995"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS2007 - CA
+
+//7.5.2 Analysis:CA-DOLMEN WITH COS2007
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-SoilUse2007.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS2007"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS2010 - CA
+
+//7.5.3 Analysis:CA-DOLMEN WITH COS2010
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-SoilUse2010.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS2010"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS2015 - CA
+
+//7.5.4 Analysis:CA-DOLMEN WITH COS2015
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-SoilUse2015.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS2015"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS2018 - CA
+
+//7.5.5 Analysis:CA-DOLMEN WITH COS2018
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-SoilUse2018.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS2018"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS1995 - PA
+
+//7.5.5 Analysis:PA-DOLMEN WITH COS1995
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-SoilUse1995.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS1995"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS2007 - PA
+
+//7.5.6 Analysis:PA-DOLMEN WITH COS2007
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-SoilUse2007.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS2007"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS2010 - PA
+
+//7.5.7 Analysis:PA-DOLMEN WITH COS2010
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-SoilUse2010.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS2010"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 50 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  COS2015 - PA
+//7.5.8 Analysis:PA-DOLMEN WITH COS2018
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-SoilUse2018.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (E55:E55_Type {b: "COS2018"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 100 ROWS
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  SOILUSE - PA
+//7.6 Analysis:PA-DOLMEN WITH SOILTYPE
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaPA-SoilType.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (:E17_Type_Assigment {E17TerminologyDefinition: "Tipo de Solo"})-[:P2A1_assigned_definition_types]->(E55:E55_Type)-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+// --------------------------------------------------- ANALISES DOLMEN PROXIMIDADE WITH  SOILUSE - CA
+
+//7.6.1 Analysis:CA-DOLMEN WITH SOILTYPE
+
+:auto LOAD CSV WITH HEADERS FROM "file:///DolmenPaaviaCA-SoilType.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (:E17_Type_Assigment {E17TerminologyDefinition: "Tipo de Solo"})-[:P2A1_assigned_definition_types]->(E55:E55_Type)-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.WITH_FID}), (SP6)-[:P168_place_is_defined_by]->(E94Range:E94_Space_Primitive)
+
+WITH E42, E94Range, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94Domain:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94Domain)-[r:sfWithin]->(E94Range)
+
+
+} IN TRANSACTIONS OF 100 ROWS
