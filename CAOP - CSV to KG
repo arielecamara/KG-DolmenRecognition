@@ -1,6 +1,6 @@
-// Document
+//2Query:CartografiaCAOP
 
-LOAD CSV WITH HEADERS FROM "file:///CAOP2022-Pavia.csv" AS ROW
+LOAD CSV WITH HEADERS FROM "file:///CAOP2022-Pais.v3.WGS84.csv" AS ROW
 
 // ------------------- ENTITIES
 
@@ -33,7 +33,7 @@ CREATE (E18SpecificResource:E18_Phisical_Thing {E18SpecificResource:"Território
 
 // GEOMETRY
 
-MERGE (E42PolygonID:E42_Identifier {E42PolygonID:ROW.DICOFRE})
+MERGE (E42PolygonID:E42_Identifier {E42PolygonID:ROW.DICOFRE,E42PolygonIDGis:ROW.IDGis})
 CREATE (SP6PlacePolygon:SP6_Declarative_Place {SP6DeclarativePlace:"O lugar definido pelo poligono:  "+E42PolygonID.E42PolygonID})
 CREATE (E94WKT:E94_Space_Primitive {E94PolygonWKT:ROW.WKT})
 MERGE (SP4DatumWKT:SP4_Spatial_Coordinate_Reference_System {SP4Datum:"WKT"})
