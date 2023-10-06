@@ -1,0 +1,224 @@
+// --------------------------------------------------- GRIDS
+
+//8. Grid: INSERTION
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhacomWKT_QGIS.csv" AS ROW
+
+CALL {WITH ROW
+
+CREATE (geoFeature: Geo_Feature {GridID: ROW.GridID})
+CREATE (C1AreaHa:C1_Geometry_extracted_from_maps {GLE3AreaHa: ROW.Shape_Area})
+CREATE (C1Lenght:C1_Geometry_extracted_from_maps {GLE10_Lenght: ROW.Shape_Leng})
+CREATE (geoGeometry: Geo_Geometry {WKT: ROW.WKT})
+
+
+CREATE (C1Lenght)-[:GLP1_space_primitive_is_defined_by]->(geoFeature)
+CREATE (C1Lenght)<-[:GLP1_defines_space_primitive]-(geoFeature)
+
+CREATE (C1AreaHa)-[:GLP1_space_primitive_is_defined_by]->(geoFeature)
+CREATE (C1AreaHa)<-[:GLP1_defines_space_primitive]-(geoFeature)
+
+
+CREATE (geoFeature)-[:geo_hasGeometry]->(geoGeometry)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+// --------------------------------------------------- GRIDS
+
+// ----------------- RELATIONS
+
+//8.1 Grid: DOLMEN PA
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaDolmensPA.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GrelhaID})
+
+WITH geoFeature, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "PA - MAP WEB"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+// ----------
+
+//8.1.1 Grid: DOLMEN CA
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaDolmensCA.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GrelhaID})
+
+WITH geoFeature, ROW
+
+MATCH (E31Document:E31_Document {E31Document: "CA"})-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive), (E42GlobalID:E42_Identifier{E42GlobalID:ROW.IDGlobal})<-[]-(E22)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+// ----------
+
+//8.2 Grid: WaterLine
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaWater.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GrelhaID})
+
+WITH geoFeature, ROW
+
+MATCH (E55:E55_Type {E55TerminologyType: "Rios"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.codigo}), (SP6)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+// ----------
+
+//8.3 Grid: Relief
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaContourLine.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GrelhaID})
+
+WITH geoFeature, ROW
+
+MATCH (:E17_Type_Assigment {E17TerminologyDefinition: "Hipsometria"})-[:P2A1_assigned_definition_types]->(E55:E55_Type)-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.IDGIS}), (SP6)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+// ----------
+
+//8.4 Grid: SoilType
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaSoilType.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GrelhaID})
+
+WITH geoFeature, ROW
+
+MATCH (:E17_Type_Assigment {E17TerminologyDefinition: "Tipo de Solo"})-[:P2A1_assigned_definition_types]->(E55:E55_Type)-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.Soil_ID}), (SP6)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+// ----------
+
+//8.5 Grid: COS1995
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaCOS1995.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GridID})
+
+WITH geoFeature, ROW
+
+MATCH (E55:E55_Type {b: "COS1995"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.IDGIS}), (SP6)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+
+// ----------
+
+//8.5.1 Grid: COS2007
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaCOS2007.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GridID})
+
+WITH geoFeature, ROW
+
+MATCH (E55:E55_Type {b: "COS2007"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.IDGIS}), (SP6)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+// ----------
+
+//8.5.2 Grid: COS2010
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaCOS2010.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GridID})
+
+WITH geoFeature, ROW
+
+MATCH (E55:E55_Type {b: "COS2010"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.IDGIS}), (SP6)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+// ----------
+
+//8.5.3 Grid: COS2015
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaCOS2015.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GridID})
+
+WITH geoFeature, ROW
+
+MATCH (E55:E55_Type {b: "COS2015"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.IDGIS}), (SP6)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
+
+
+// ----------
+
+//8.5.4 Grid: COS2018
+
+:auto LOAD CSV WITH HEADERS FROM "file:///GrelhaCOS2018.csv" AS ROW
+
+CALL {WITH ROW
+
+MATCH (geoFeature: Geo_Feature {GridID: ROW.GridID})
+
+WITH geoFeature, ROW
+
+MATCH (E55:E55_Type {b: "COS2018"})-[:P137_is_exemplified_by]->(:E18_Phisical_Thing)-[:P67_is_referred_to_by]->(SP6:SP6_Declarative_Place)-[:P48_has_preferred_identifier]->(E42:E42_Identifier {E42PolygonID:ROW.IDGIS}), (SP6)-[:P168_place_is_defined_by]->(E94:E94_Space_Primitive)
+
+
+MERGE (E94)-[r:sfWithin]->(geoFeature)
+
+} IN TRANSACTIONS OF 100 ROWS
