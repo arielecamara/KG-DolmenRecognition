@@ -1,0 +1,30 @@
+// QUERY0.5.1 - Analise dolmens proximidade entre o dolmen e o mais proximo, com relacao da fonte de dados onde os dados do dolmen foi obtido, o estado de conservacao do objeto de entrada e de saida assim como o tamanho do moonumento (Retorna o grafo e a visao para um monumento especifico)
+
+MATCH p=(E31DolmenDomain:E31_Document)-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22DolmenDomain:E22_Human_Made_Object)-[P55DolmenDomain:P55_has_current_location]->(SP6DolmenDomain:SP6_Declarative_Place)-[P168DolmenDomain:P168_place_is_defined_by]->(coord:E94_Space_Primitive)-[nearby:geo_sfnearby]->(coord1:E94_Space_Primitive)-[P168DolmenRange:P168_defines_place]->(SP6DolmenRange:SP6_Declarative_Place)-[P55DolmenRange:P55_currently_holds]->(E22DolmenRange:E22_Human_Made_Object)-[P140DolmenRange:P140_was_attributed_by]->(E13DolmenRange:E13_Attribute_Assignment)-[P70DolmenRange:P70_is_documented_in]->(E31DolmenRange:E31_Document), 
+
+DolmenDomainDimension=(E22DolmenDomain)-[P46DolmenDomain:P46_is_composed_of]->(E22ChamberDolmenDomain:E22_Human_Made_Object)-[P43DolmenDomain:P43_has_dimension]->(E54TypeOfDimensionDolmenDomain:E54_Dimension)-[P90DolmenDomain:P90_has_value]->(E60DimensionValueDolmenDomain:E60_Number),
+
+DolmenDomainCondition=(E22ChamberDolmenDomain)-[P44DolmenDomain:P44_has_condition]->(E3DolmenDomain:E3_Condition_State),
+
+DolmenRangeDimension=(E22DolmenRange)-[P46DolmenRange:P46_is_composed_of]->(E22ChamberDolmenRange:E22_Human_Made_Object)-[P43DolmenRange:P43_has_dimension]->(E54TypeOfDimensionDolmenRange:E54_Dimension)-[P90DolmenRange:P90_has_value]->(E60DimensionValueDolmenRange:E60_Number),
+
+DolmenRangeCondition=(E22ChamberDolmenRange)-[P44DolmenRange:P44_has_condition]->(E3DolmenRange:E3_Condition_State)
+
+WHERE E22DolmenDomain.E22Dolmen = "Anta de Pavia; Capela de São Dinis; São Dionísio" AND E54TypeOfDimensionDolmenDomain.E54TypeOfDimension = "Diameter" AND E54TypeOfDimensionDolmenRange.E54TypeOfDimension = "Diameter" AND E22ChamberDolmenDomain.E22DolmenComponent = "Chamber" AND E22ChamberDolmenRange.E22DolmenComponent = "Chamber"
+
+RETURN DISTINCT p, DolmenDomainDimension, DolmenDomainCondition, DolmenRangeDimension, DolmenRangeCondition
+
+// QUERY0.5.1.2 - Analise dolmens proximidade c/ outros monumentos inguais
+MATCH p=(E31DolmenDomain:E31_Document)-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(E22DolmenDomain:E22_Human_Made_Object)-[P55DolmenDomain:P55_has_current_location]->(SP6DolmenDomain:SP6_Declarative_Place)-[P168DolmenDomain:P168_place_is_defined_by]->(coord:E94_Space_Primitive)-[nearby:geo_sfnearby]->(coord1:E94_Space_Primitive)-[P168DolmenRange:P168_defines_place]->(SP6DolmenRange:SP6_Declarative_Place)-[P55DolmenRange:P55_currently_holds]->(E22DolmenRange:E22_Human_Made_Object)-[P140DolmenRange:P140_was_attributed_by]->(E13DolmenRange:E13_Attribute_Assignment)-[P70DolmenRange:P70_is_documented_in]->(E31DolmenRange:E31_Document), 
+
+DolmenDomainDimension=(E22DolmenDomain)-[P46DolmenDomain:P46_is_composed_of]->(E22ChamberDolmenDomain:E22_Human_Made_Object)-[P43DolmenDomain:P43_has_dimension]->(E54TypeOfDimensionDolmenDomain:E54_Dimension)-[P90DolmenDomain:P90_has_value]->(E60DimensionValueDolmenDomain:E60_Number),
+
+DolmenDomainCondition=(E22ChamberDolmenDomain)-[P44DolmenDomain:P44_has_condition]->(E3DolmenDomain:E3_Condition_State),
+
+DolmenRangeDimension=(E22DolmenRange)-[P46DolmenRange:P46_is_composed_of]->(E22ChamberDolmenRange:E22_Human_Made_Object)-[P43DolmenRange:P43_has_dimension]->(E54TypeOfDimensionDolmenRange:E54_Dimension)-[P90DolmenRange:P90_has_value]->(E60DimensionValueDolmenRange:E60_Number),
+
+DolmenRangeCondition=(E22ChamberDolmenRange)-[P44DolmenRange:P44_has_condition]->(E3DolmenRange:E3_Condition_State)
+
+WHERE E54TypeOfDimensionDolmenDomain.E54TypeOfDimension = "Diameter" AND E54TypeOfDimensionDolmenRange.E54TypeOfDimension = "Diameter" AND E22ChamberDolmenDomain.E22DolmenComponent = "Chamber" AND E22ChamberDolmenRange.E22DolmenComponent = "Chamber"
+
+RETURN DISTINCT E31DolmenDomain.E31Document, E22DolmenDomain.E22Dolmen, E3DolmenDomain.E3ConditionState, E60DimensionValueDolmenDomain.E60DimensionValue, "---", nearby.distance,"--",E31DolmenRange.E31Document, E22DolmenRange.E22Dolmen, E3DolmenRange.E3ConditionState, E60DimensionValueDolmenRange.E60DimensionValue
