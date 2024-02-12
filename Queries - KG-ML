@@ -1,19 +1,28 @@
-// NewQUERIES  DOLMENS- QUANTIDADE DE DOLMENS PROXIMOS A todos os elementos da paisagem - COM INFOMACAO DA CONDICAO
-
- MATCH Dolmen=(E31Dolmen:E31_Document {E31Document: "PA - MAP WEB"})-[P70Dolmen:P70_documents]->(E13Dolmen:E13_Attribute_Assignment)-[P140Dolmen:P140_assigned_attribute_to]->(E22DolmenDomain:E22_Human_Made_Object)-[P55Dolmen:P55_has_current_location]->(SP6Dolmen:SP6_Declarative_Place)-[P168Dolmen:P168_place_is_defined_by]->(E94Dolmen:E94_Space_Primitive),
+// NewQUERIES  Todos os elementos da paisagem proximos A DOLMEN UNICO - RETORNA GRAFO
 
 
-AGUA=(E28Water:E28_Conceptual_Object {E28ConceptualObject: "Cartografia das massas de água superficiais Rios de Portugal continental"})-[Water:P41_classified]->(E17Water:E17_Type_Assigment {E17TerminologyDefinition: "Hidrografia"})-[P2A1Water:P2A1_assigned_definition_types]->(E55Water:E55_Type)-[P137Water:P137_is_exemplified_by]->(WaterLine:E18_Phisical_Thing)-[P67Water:P67_is_referred_to_by]->(SP6Water:SP6_Declarative_Place)-[P168Water:P168_place_is_defined_by]->(E94Water:E94_Space_Primitive)<-[nearbyWater:geo_sfnearby]-(E94Dolmen),
+MATCH p=(E31Document:E31_Document)-[:P70_documents]->(:E13_Attribute_Assignment)-[:P140_assigned_attribute_to]->(Dolmen:E22_Human_Made_Object)-[:P55_has_current_location]->(:SP6_Declarative_Place)-[:P168_place_is_defined_by]->(E94PolygonWKT:E94_Space_Primitive),
 
-RELIEF=(E28Relief:E28_Conceptual_Object)-[P41Relief:P41_classified]->(E17Relief:E17_Type_Assigment {E17TerminologyDefinition: "Hipsometria"})-[P2A1Relief:P2A1_assigned_definition_types]->(E55Relief:E55_Type)-[P137Relief:P137_is_exemplified_by]->(E18Relief:E18_Phisical_Thing)-[P67Relief:P67_is_referred_to_by]->(SP6Relief:SP6_Declarative_Place)-[P168Relief:P168_place_is_defined_by]->(E94Relief:E94_Space_Primitive)<-[nearbyRelief:geo_sfnearby]-(E94Dolmen),
+DolmenID=(Dolmen)-[P48DolmenID:P48_has_preferred_identifier]->(E42DolmenID:E42_Identifier),
+
+DolmenDimension=(Dolmen)-[:P46_is_composed_of]-(chamber:E22_Human_Made_Object {E22DolmenComponent: "Chamber"})-[P43DolmenDimension:P43_has_dimension]-(E54TypeOfDimension:E54_Dimension {E54TypeOfDimension: "Diameter"})-[:P90_has_value]-(ChamberDiameter:E60_Number),
+
+DolmenChamber=(chamber)-[:P44_has_condition]-(Condition:E3_Condition_State),
+
+AGUA=(E28Water:E28_Conceptual_Object)-[P41Water:P41_classified]->(E17Water:E17_Type_Assigment {E17TerminologyDefinition: "Hidrografia"})-[P2A1Water:P2A1_assigned_definition_types]->(E55Water:E55_Type)-[P137Water:P137_is_exemplified_by]->(WaterLine:E18_Phisical_Thing)-[P67Water:P67_is_referred_to_by]->(SP6Water:SP6_Declarative_Place)-[P168Water:P168_place_is_defined_by]->(E94Water:E94_Space_Primitive)<-[nearbyWater:geo_sfnearby]-(E94PolygonWKT),
+
+ RELIEF=(E28Relief:E28_Conceptual_Object)-[P41Relief:P41_classified]->(E17Relief:E17_Type_Assigment {E17TerminologyDefinition: "Hipsometria"})-[P2A1Relief:P2A1_assigned_definition_types]->(E55Relief:E55_Type)-[P137Relief:P137_is_exemplified_by]->(E18Relief:E18_Phisical_Thing)-[P67Relief:P67_is_referred_to_by]->(SP6Relief:SP6_Declarative_Place)-[P168Relief:P168_place_is_defined_by]->(E94Relief:E94_Space_Primitive)<-[nearbyRelief:geo_sfnearby]-(E94PolygonWKT),
 
  (E18Relief)-[P43Relief:P43_has_dimension]->(E534Relief:E54_Dimension)-[P90Relief:P90_has_value]->(E60Relief:E60_Number),
 
-SOILTYPE=(E28SoilType:E28_Conceptual_Object {E28ConceptualObject: "Cartografia dos Solos à escala 1: 25 000 (Sul)"})-[SoilType:P41_classified]->(E17SoilType:E17_Type_Assigment {E17TerminologyDefinition: "Tipo de Solo"})-[P2A1SoilType:P2A1_assigned_definition_types]->(E55SoilType:E55_Type)-[P137SoilType:P137_is_exemplified_by]->(E18SoilType:E18_Phisical_Thing)-[P67SoilType:P67_is_referred_to_by]->(SP6SoilType:SP6_Declarative_Place)-[P168SoilType:P168_place_is_defined_by]->(E94SoilType:E94_Space_Primitive)<-[SoilTypeWithin:sfWithin]-(E94Dolmen),
+SOILTYPE=(E28SoilType:E28_Conceptual_Object)-[P41SoilType:P41_classified]->(E17SoilType:E17_Type_Assigment {E17TerminologyDefinition: "Tipo de Solo"})-[P2A1SoilType:P2A1_assigned_definition_types]->(E55SoilType:E55_Type)-[P137SoilType:P137_is_exemplified_by]->(E18SoilType:E18_Phisical_Thing)-[P67SoilType:P67_is_referred_to_by]->(SP6SoilType:SP6_Declarative_Place)-[P168SoilType:P168_place_is_defined_by]->(E94SoilType:E94_Space_Primitive)<-[SoilTypeWithin:sfWithin]-(E94PolygonWKT),
 
-SOILUSE=(E28SoilUse:E28_Conceptual_Object)-[P41SoilUse:P41_classified]->(E17SoilUse:E17_Type_Assigment {E17TerminologyDefinition: "Uso do Solo"})-[P2A1SoilUse:P2A1_assigned_definition_types]->(E55SoilUseLevel1:E55_Type)-[P127SoilUse1:P127_has_narrower_term]->(E55SoilUseLevel2:E55_Type)-[P127SoilUse2:P127_has_narrower_term]->(E55SoilUseLevel3:E55_Type)-[P127SoilUse3:P127_has_narrower_term]->(E55SoilUseLevel4:E55_Type {b: "COS2018"})-[P137SoilUse:P137_is_exemplified_by]->(E18SoilUse:E18_Phisical_Thing)-[P67SoilUse:P67_is_referred_to_by]->(SP6SoilUse:SP6_Declarative_Place)-[P168SoilUse:P168_place_is_defined_by]->(E94SoilUse:E94_Space_Primitive)<-[SoilUseWithin:sfWithin]-(E94Dolmen)
+SOILUSE=(E28SoilUse:E28_Conceptual_Object)-[P41SoilUse:P41_classified]->(E17SoilUse:E17_Type_Assigment {E17TerminologyDefinition: "Uso do Solo"})-[P2A1SoilUse:P2A1_assigned_definition_types]->(E55SoilUseLevel1:E55_Type)-[P127SoilUse1:P127_has_narrower_term]->(E55SoilUseLevel2:E55_Type)-[P127SoilUse2:P127_has_narrower_term]->(E55SoilUseLevel3:E55_Type)-[P127SoilUse3:P127_has_narrower_term]->(E55SoilUseLevel4:E55_Type {b: "COS2018"})-[P137SoilUse:P137_is_exemplified_by]->(E18SoilUse:E18_Phisical_Thing)-[P67SoilUse:P67_is_referred_to_by]->(SP6SoilUse:SP6_Declarative_Place)-[P168SoilUse:P168_place_is_defined_by]->(E94SoilUse:E94_Space_Primitive)<-[SoilUseWithin:sfWithin]-(E94PolygonWKT)
 
 
-RETURN DISTINCT COLLECT (E22DolmenDomain.E22Dolmen) AS DolmenName, COUNT (E22DolmenDomain) AS DolmenNumber, WaterLine.E18SpecificResource AS WaterLine, E18SoilType.E18SpecificResource AS SoilType, E18SoilUse.E18SpecificResource AS SoilUse2018, E60Relief.E60Number AS Relief
+WHERE E42DolmenID.E42GlobalID = "D11"
 
-ORDER BY DolmenNumber DESC, WaterLine 
+RETURN p, DolmenID, DolmenDimension, DolmenChamber, AGUA, RELIEF, SOILTYPE, SOILUSE
+
+----------------------
+
